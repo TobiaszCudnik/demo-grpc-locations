@@ -1,0 +1,21 @@
+- drone node
+  - unique ID
+  - grpc client
+  - register on the central
+    - include the location
+  - send diff based locations every X secs
+- central node
+  - express server
+  - grpc server
+  - show a table of drones
+    - id, current speed
+    - mark drones which havent moved >1m in the last 10secs
+  - compute location diffs with the prev data
+    - keep last 10 secs of locations
+    - figure out the speed
+- tests
+  - unit server
+    - express
+    - grpc
+  - unit client grpc
+  - integration
