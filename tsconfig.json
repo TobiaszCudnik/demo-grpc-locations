@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "noEmit": true,
     "strict": true,
     "target": "es6",
+    "allowSyntheticDefaultImports": true,
     "moduleResolution": "node"
   },
   "include": [
