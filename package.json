@@ -1,8 +1,7 @@
 {
-  "name": "balena-drones",
+  "name": "grpc-drones",
   "version": "1.0.0",
   "description": "",
-  "main": "build/server/balena-drones-server.js",
   "scripts": {
     "test": "jest"
   },
@@ -14,6 +13,8 @@
     "@types/debug": "^4.1.5",
     "@types/google-protobuf": "^3.7.2",
     "@types/jest": "^24.9.0",
+    "@types/node": "^13.1.8",
+    "assert": "^2.0.0",
     "debug": "^4.1.1",
     "delay": "^4.3.0",
     "geo-point": "^1.2.1",
@@ -24,7 +25,6 @@
     "parcel-bundler": "^1.12.4",
     "prettier": "^1.19.1",
     "ts-jest": "^24.3.0",
-    "typescript": "^3.7.5",
-    "uniqid": "^5.2.0"
+    "typescript": "^3.7.5"
   }
 }

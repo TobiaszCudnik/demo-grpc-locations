@@ -1,8 +1,9 @@
 import { option, leaf, cli } from "@carnesen/cli";
 import { Drone } from "./client";
-import { defaultUrl, log } from "./utils";
-// @ts-ignore
-import * as uniqid from "uniqid";
+import { defaultUrl, uniqid } from "./utils";
+import debug from "debug";
+
+const log = debug("drones:client-cli");
 
 const drone = leaf({
   commandName: "drone",
@@ -15,7 +16,7 @@ const drone = leaf({
       defaultValue: defaultUrl
     }),
     id: option({
-      typeName: "string",
+      typeName: "number",
       nullable: false,
       description: "Drone's ID",
       defaultValue: uniqid()

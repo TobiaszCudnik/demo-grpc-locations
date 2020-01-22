@@ -1,0 +1,17 @@
+syntax = "proto3";
+package drones;
+
+service Location {
+    rpc sendLocation (stream LocationMsg) returns (Ack) {
+    }
+}
+
+message Ack {
+}
+
+message LocationMsg {
+    int32 id = 1;
+    int32 x = 2;
+    int32 y = 3;
+    bool full = 4;
+}
