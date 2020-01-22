@@ -11,6 +11,10 @@ import debug, { Debugger } from "debug";
 
 export class Drone {
   client: LocationClient;
+
+  /**
+   * Current location, defined in meters and relative to the point 0.
+   */
   location: TLocation = { x: 0, y: 0 };
 
   updateFullIntervalSec = 60;
@@ -28,13 +32,14 @@ export class Drone {
   constructor(public id: number = uniqid(), url: string = defaultUrl) {
     this.logHandler = debug("drones:client:" + id);
     this.log("started");
-    this.client = new LocationClient(url, grpc.credentials.createInsecure());
+    this.client = this.createRpcClient(url);
 
     this.client.waitForReady(Date.now() + 10 * SEC, (err: Error | null) => {
       if (err) {
         throw err;
       }
       this.log("connected");
+      this.initStream();
       this.tick();
     });
   }
@@ -51,7 +56,12 @@ export class Drone {
     }
   }
 
-  async updateLocation() {
+  /**
+   * Send location to the server.
+   */
+  async sendLocation() {
+    this.initStream();
+
     const nextFullUpdate =
       this.lastFullUpdate + this.updateFullIntervalSec * SEC;
 
@@ -67,12 +77,21 @@ export class Drone {
 
   // INTERNAL
 
+  protected createRpcClient(url: string): LocationClient {
+    return new LocationClient(url, grpc.credentials.createInsecure());
+  }
+
   protected log(...msg: any[]) {
     // @ts-ignore
     this.logHandler(...msg);
   }
 
   protected initStream() {
+    // skip if exists
+    if (this.stream) {
+      return
+    }
+
     this.stream = this.client.sendLocation(
       (err: ServiceError | null, _: Ack) => {
         if (err) {
@@ -84,6 +103,7 @@ export class Drone {
         this.stream = null;
       }
     );
+
     // include the ID in the first req
     this.forceFullUpdate = true;
     this.log("stream inited");
@@ -99,13 +119,8 @@ export class Drone {
       return;
     }
 
-    // init the stream if none
-    if (!this.stream) {
-      this.initStream();
-    }
-
     try {
-      await this.updateLocation();
+      await this.sendLocation();
     } catch (err) {
       this.log(err);
     }
@@ -121,11 +136,14 @@ export class Drone {
     const msg = new LocationMsg();
     // dont sent ID in the diff
     msg.setId(0);
-    msg.setX(this.lastSentLocation.x - this.location.x);
-    msg.setY(this.lastSentLocation.y - this.location.y);
+    msg.setX(this.location.x - this.lastSentLocation.x);
+    msg.setY(this.location.y - this.lastSentLocation.y);
     msg.setFull(false);
 
     await this.write(msg);
+
+    // deep copy the location obj
+    this.lastSentLocation = { ...this.location };
   }
 
   protected async fullUpdate() {
@@ -136,8 +154,11 @@ export class Drone {
     msg.setFull(true);
 
     this.forceFullUpdate = false;
-    this.lastFullUpdate = Date.now()
+    this.lastFullUpdate = Date.now();
     await this.write(msg);
+
+    // deep copy the location obj
+    this.lastSentLocation = { ...this.location };
   }
 
   protected async write(msg: LocationMsg) {
@@ -148,8 +169,5 @@ export class Drone {
     if (!stream.write(msg)) {
       await promisify(stream.once).call(stream, "drain");
     }
-
-    // deep copy the location obj
-    this.lastSentLocation = { ...this.location };
   }
 }

@@ -1,9 +1,6 @@
 import { option, leaf, cli } from "@carnesen/cli";
 import { Drone } from "./client";
 import { defaultUrl, uniqid } from "./utils";
-import debug from "debug";
-
-const log = debug("drones:client-cli");
 
 const drone = leaf({
   commandName: "drone",
@@ -23,13 +20,7 @@ const drone = leaf({
     })
   },
   action: async ({ url, id }) => {
-    const drone = new Drone(id, url);
-    log("connecting...");
-    // wait max 10 secs
-    await new Promise(resolve => {
-      drone.client.waitForReady(Date.now() + 10 * 1000, resolve);
-    });
-    log(`connected to ${url}`);
+    new Drone(id, url);
   }
 });
 
