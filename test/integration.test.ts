@@ -2,12 +2,28 @@ import delay from "delay";
 import sinon from "sinon";
 import { Drone } from "../src/client";
 import { Server } from "../src/server";
+import { uniqid } from "../src/utils";
+
+const rpcUrl = "localhost:25100";
+const httpPort = 25101;
+
+beforeAll(() => {
+  // MOCK
+  // @ts-ignore
+  sinon.stub(Server.prototype, "createExpress");
+});
+
+afterAll(() => {
+  // restore the originals
+  // @ts-ignore
+  Server.prototype.createExpress.restore();
+});
 
 describe("connection", () => {
   test("full", async () => {
-    const server = new Server();
-    const drone1 = new Drone();
-    const drone2 = new Drone();
+    const server = new Server(rpcUrl, httpPort);
+    const drone1 = new Drone(uniqid(), rpcUrl);
+    const drone2 = new Drone(uniqid(), rpcUrl);
 
     // run for a sec
     await delay(1000);
@@ -21,9 +37,9 @@ describe("connection", () => {
   });
 
   test("diffs", async () => {
-    const server = new Server();
-    const drone1 = new Drone();
-    const drone2 = new Drone();
+    const server = new Server(rpcUrl, httpPort);
+    const drone1 = new Drone(uniqid(), rpcUrl);
+    const drone2 = new Drone(uniqid(), rpcUrl);
 
     // run for 3 secs
     await delay(3000);
@@ -31,9 +47,7 @@ describe("connection", () => {
     // tear down
     drone1.close();
     drone2.close();
-    await new Promise(resolve => {
-      server.grpc.tryShutdown(resolve);
-    });
+    await server.close();
   });
 });
 
@@ -49,8 +63,9 @@ describe("positions", () => {
   });
 
   test("move", async () => {
-    const server = new Server();
-    const drone1 = new Drone();
+    const server = new Server(rpcUrl, httpPort);
+    const drone1 = new Drone(uniqid(), rpcUrl);
+
     drone1.location = { x: 100, y: 100 };
 
     // TODO wait on clients connected
@@ -73,15 +88,13 @@ describe("positions", () => {
     expect(server.locations.size).toEqual(1);
     const locations = server.locations.get(drone1.id)!;
 
-    expect(locations[0].location).toMatchObject({x: 300, y: 200})
-    expect(locations[1].location).toMatchObject({x: 200, y: 200})
-    expect(locations[2].location).toMatchObject({x: 200, y: 100})
-    expect(locations[3].location).toMatchObject({x: 100, y: 100})
+    expect(locations[0].location).toMatchObject({ x: 300, y: 200 });
+    expect(locations[1].location).toMatchObject({ x: 200, y: 200 });
+    expect(locations[2].location).toMatchObject({ x: 200, y: 100 });
+    expect(locations[3].location).toMatchObject({ x: 100, y: 100 });
 
     // tear down
     drone1.close();
-    await new Promise(resolve => {
-      server.grpc.tryShutdown(resolve);
-    });
+    await server.close();
   });
 });

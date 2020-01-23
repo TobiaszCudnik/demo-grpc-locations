@@ -1,6 +1,6 @@
 import { option, leaf, cli } from "@carnesen/cli";
 import { Drone } from "./client";
-import { defaultUrl, uniqid } from "./utils";
+import { defaultRpcUrl, uniqid } from "./utils";
 
 const drone = leaf({
   commandName: "drone",
@@ -10,7 +10,7 @@ const drone = leaf({
       typeName: "string",
       nullable: false,
       description: "Server's URL",
-      defaultValue: defaultUrl
+      defaultValue: defaultRpcUrl
     }),
     id: option({
       typeName: "number",
@@ -21,6 +21,9 @@ const drone = leaf({
   },
   action: async ({ url, id }) => {
     new Drone(id, url);
+    await new Promise(() => {
+      // TODO wait till the client's done
+    });
   }
 });
 

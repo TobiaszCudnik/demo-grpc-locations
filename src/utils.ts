@@ -10,7 +10,13 @@ export type TLocationDiff = {
   y: number;
 };
 
-export const defaultUrl = "0.0.0.0:25000";
+export type TLocationEntry = {
+  time: TClientID;
+  location: TLocation;
+};
+
+export const defaultRpcUrl = "localhost:25000";
+export const defaultHttpPort = 8080;
 
 export const SEC = 1000;
 

@@ -12,6 +12,8 @@ describe("locations", () => {
 
     // @ts-ignore
     sinon.stub(Server.prototype, "createGrpc");
+    // @ts-ignore
+    sinon.stub(Server.prototype, "createExpress");
   });
 
   afterAll(() => {
@@ -23,12 +25,13 @@ describe("locations", () => {
     server = new Server();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await server.close();
     // reset mocks' counters
     sandbox.reset();
   });
 
-  test.only("stalled", async () => {
+  test("stalled", async () => {
     const now = Date.now();
     const id = 123;
     server.locations.set(id, [
@@ -40,7 +43,7 @@ describe("locations", () => {
     expect(server.isStalled(id, 2)).toBeTruthy();
   });
 
-  test.only("moved", async () => {
+  test("moved", async () => {
     const now = Date.now();
     const id = 123;
     server.locations.set(id, [
@@ -50,5 +53,26 @@ describe("locations", () => {
       { time: now - 3 * SEC, location: { x: 100, y: 100 } }
     ]);
     expect(server.isStalled(id, 4)).toBeFalsy();
+  });
+
+  test("speed1", async () => {
+    const now = Date.now();
+    const id = 123;
+    server.locations.set(id, [
+      { time: now, location: { x: 1, y: 0 } },
+      { time: now - SEC, location: { x: 0, y: 0 } }
+    ]);
+    // 3.6 kmph
+    expect(server.speed(id)).toEqual((60 * 60) / 1000);
+  });
+
+  test("speed2", async () => {
+    const now = Date.now();
+    const id = 123;
+    server.locations.set(id, [
+      { time: now, location: { x: 1, y: 1 } },
+      { time: now - SEC, location: { x: 0, y: 0 } }
+    ]);
+    expect(server.speed(id)).toEqual(5.09);
   });
 });

@@ -1,11 +1,11 @@
 import assert from "assert";
+import debug, { Debugger } from "debug";
 import * as grpc from "grpc";
 import { ServiceError } from "grpc";
 import { promisify } from "util";
 import { LocationClient } from "./proto/api_grpc_pb";
 import { LocationMsg, Ack } from "./proto/api_pb";
-import { defaultUrl, SEC, TLocation, uniqid } from "./utils";
-import debug, { Debugger } from "debug";
+import { defaultRpcUrl, SEC, TLocation, uniqid } from "./utils";
 
 // DEFS
 
@@ -29,9 +29,9 @@ export class Drone {
 
   protected stream: grpc.ClientWritableStream<LocationMsg> | null = null;
 
-  constructor(public id: number = uniqid(), url: string = defaultUrl) {
+  constructor(public id: number = uniqid(), url: string = defaultRpcUrl) {
     this.logHandler = debug("drones:client:" + id);
-    this.log("started");
+    this.log("started", url);
     this.client = this.createRpcClient(url);
 
     this.client.waitForReady(Date.now() + 10 * SEC, (err: Error | null) => {
@@ -89,7 +89,7 @@ export class Drone {
   protected initStream() {
     // skip if exists
     if (this.stream) {
-      return
+      return;
     }
 
     this.stream = this.client.sendLocation(
