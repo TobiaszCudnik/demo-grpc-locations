@@ -2,7 +2,9 @@
 
 Example implementation of a location reporting system based on gRPC and
 protocol buffers. Clients send diff based location data in binary streams.
-The server lists them and marks the stalled ones. Part of an interview proces with Balena.
+The server lists them and marks the stalled ones.
+
+Part of an interview proces with Balena (2020).
 
 ### Building
 
