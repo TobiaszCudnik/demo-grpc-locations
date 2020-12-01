@@ -1,4 +1,4 @@
-# gRPC Drones
+# gRPC Locations
 
 Example implementation of a location reporting system based on gRPC and
 protocol buffers. Clients send diff based location data in binary streams.
